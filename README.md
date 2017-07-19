@@ -15,7 +15,23 @@ Finally to run the service run the exe `ame_webservice_console.exe`
 The console window should now be saying 'Creating AMEServer Succeeded' and AME will be open. Take note of the service ip address and port for the next step - Config the test
 
 ### Config the test
+open up testing/test-config.js
+Here you can change the AME version IP and Port to match your system settings.
 
+```
+# install the packages
+npm install
+
+# build and run test
+npm test
+
+# build the dist packages only
+npm run build
+
+# run the test only
+npm run test-ame-native
+
+```
 
 
 
