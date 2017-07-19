@@ -654,6 +654,8 @@ export class AdobeMediaEncoder extends events.EventEmitter
 
         if (this._log == null) this._log = this._logFactory.getLogger();
 
+        console.log('AdobeMediaEncoder');
+
         this._options = options;
         this._client = new AMEWebserviceClient(options);
     }

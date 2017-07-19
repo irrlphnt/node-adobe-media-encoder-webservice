@@ -14,8 +14,12 @@
     "url": "http://spoox.org"
   },
   "scripts": {
-    "prepublish": "tsc -p .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p .",
+    "start": "npm run test",
+    "pretest": "npm run build",
+    "test": "npm run test-ame-native",
+    "test-ame-native": "node ./testing/test-ame-native.js",
+    "test-ame": "node ./testing/test-ame.js ame"
   },
   "repository": {
     "type": "git",
@@ -38,6 +42,7 @@
     "xml2js": "^0.4.16"
   },
   "devDependencies": {
+    "ip": "^1.1.5",
     "typescript": "^1.8.9"
   },
   "main": "dist/index",

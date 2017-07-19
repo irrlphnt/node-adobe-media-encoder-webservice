@@ -1,3 +1,15 @@
+# Test files
+# =========================
+testing/files/*.mxf
+testing/files/*.xmp
+
+# dist files
+# =========================
+dist/*
+presets_cache_dump.json
+
+# ======================
+
 # Logs
 logs
 *.log
@@ -77,3 +89,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+

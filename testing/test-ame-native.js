@@ -1,63 +1,80 @@
-var process = require('process');
-var AdobeMediaEncoder = require('../dist').AdobeMediaEncoder;
-var AMEPresetsTreeReader = require('../dist').AMEPresetsTreeReader;
 
+//var process = require('process');
+var path = require('path');
+var config = require('./test-config');
+var AdobeMediaEncoder = require('../dist').AdobeMediaEncoder;
+var AMEPresetsReader = require('../dist').AMEPresetsReader;
 var logging = require('logging-interfaces');
 var logFactory = new logging.ContextPrefixedLoggerFactory(new logging.ConsoleLogger());
+var q = require('q');
 
-/*
-AMEPresetsTreeReader.load("c:\\users\\rune\\Documents\\Adobe\\Adobe Media Encoder\\9.0\\Presets\\PresetTree.xml")
-.then(
-    (presets) => {
-        if (process.argv.length > 2)
-            console.log(JSON.stringify(presets.all[process.argv[2]], null, '\t'))
-        else
-            console.log(JSON.stringify(presets));
-    },
-    (err) => console.error("ERROR!", err)
-);
-*/
 
-var ame = new AdobeMediaEncoder({
-    enableNotificationsServer: false,
-    notificationsPort: 8018,
-    hostname: 'localhost',
-    port: 8081,
-    loggerFactory: logFactory
-});
+//==========================================
+var ame;
 
-console.info("Starting AME gateway..")
-ame.start().then(
-    () =>
-    {
-        console.info("AME gateway started!");
 
-        const submit = () => {
-            var job1 = ame.enqueueJob(
-            {
-                sourceFilePath: "d:\\render_me.avi",
-                destinationPath: "d:\\temp\\render_me.mxf",
-                sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2015\\MediaIO\\systempresets\\4D584620_444D5846\\DNX HQ 720p 23.976.epr",
-                overwriteDestinationIfPresent: true
-            }, 'job1');
+//start the test 
+setupAME()
+.then(findPreset)
+.then(submitTestJob)
 
-            job1.on('progress', () =>
-            {
-                console.log(`Progress: ${job1.progress} (${job1.statusText})`);
-            });
+//=================================
 
-            job1.on('ended', () =>
-            {
-                console.log(`Ended: ${job1.status}`, job1.lastStatusResponse);
-            })
-        };
+function setupAME() {
+    ame = new AdobeMediaEncoder({
+        enableNotificationsServer: false,
+        notificationsPort: 8018,
+        hostname: config.AME_SERVER_IP_ADDRESS,
+        port: config.AME_SERVER_PORT,
+        loggerFactory: logFactory
+    });
 
-        // abort the current (for testing)
-        ame.client.abortJob().then(() => submit(), (err) => console.log(err));
-        //submit();
-    },
-    () =>
-    {
-        console.error("Error starting AME gateway");
-    }
-)
+    console.info("Starting AME gateway..")
+    return ame.start();
+}
+function findPreset (a) {
+
+    const d = q.defer();
+
+    var presetName = config.AME_PRESET;
+    var presetCache = path.resolve(config.AME_LOCAL_DIR, "PresetCache.xml");
+    console.info ('searching for preset: ' + presetName + " in: " + presetCache);
+
+    AMEPresetsReader.loadCache(presetCache)
+    .then(
+        (presets) => {
+            result = presets.list.filter(p => { return p.displayName === presetName});
+            if (result.length > 0) 
+                d.resolve(result[0]);
+            else 
+                d.reject('preset not found: ' + presetName);
+        },
+        (err) => d.reject("ERROR!", err)
+    );
+    return d.promise;
+}
+
+function submitTestJob(preset) {
+
+        if (!preset) return;
+
+        console.info("start enqueueJob", preset);
+
+        var job1 = ame.enqueueJob(
+        {
+            sourceFilePath: config.TEST_FILE_DIR + "\\test.mp4",
+            destinationPath: config.TEST_FILE_DIR + "\\test.mxf",
+            sourcePresetPath: preset.path,
+            overwriteDestinationIfPresent: true
+        }, 'job1');
+
+        job1.on('progress', () =>
+        {
+            console.log(`Progress: ${job1.progress} (${job1.statusText})`);
+        });
+
+        job1.on('ended', () =>
+        {
+            console.log(`Ended: ${job1.status}`, job1.lastStatusResponse);
+        })
+}

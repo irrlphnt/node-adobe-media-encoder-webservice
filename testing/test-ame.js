@@ -1,18 +1,29 @@
 'use strict';
+
 require('source-map-support').install();
 var fs = require('fs');
+var os = require('os');
+var ip = require("ip");
+var path = require("path");
 var dist_1 = require('../dist');
+
+var testFileDir = path.resolve(__dirname, 'files');
+
+
 var ame = new dist_1.AMEWebserviceClient({
-    hostname: 'localhost',
-    port: 8081
+    hostname:  ip.address(),
+    port: 8080
 });
+
 var cmd = process.argv[2];
+console.log("cmd", cmd);
 if (cmd == "list_cache") {
-    var cachePath = "C:\\Users\\rune\\Documents\\Adobe\\Adobe Media Encoder\\9.0\\PresetCache.xml";
+    var cachePath = os.homedir() + "\\Documents\\Adobe\\Adobe Media Encoder\\11.0\\PresetCache.xml";
+    console.log("cachePath", cachePath);
     dist_1.AMEPresetsReader.loadCache(cachePath)
         .then(function (cache) {
         fs.writeFileSync('presets_cache_dump.json', JSON.stringify(cache));
-        //console.log(JSON.stringify(cache, null, '  '));
+        console.log(JSON.stringify(cache, null, '  '));
     }, function (err) {
         console.error("problem:", err);
     });
@@ -40,10 +51,14 @@ else if (cmd == "server_status") {
 }
 else if (cmd == "submit_job" || cmd == "job_submit") {
     ame.submitJob({
-        sourceFilePath: "d:\\render_me.avi",
+        /*sourceFilePath: "d:\\render_me.avi",
         destinationPath: "d:\\render_me.mxf",
         //sourcePresetPath: "C:\\Users\\rune\\Documents\\Adobe\\Adobe Media Encoder\\9.0\\Presets\\AVC-Intra 100 1080 (PAL).epr",
         sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2015\\MediaIO\\systempresets\\4D584620_444D5846\\DNX HQ 720p 23.976.epr",
+        overwriteDestinationIfPresent: true*/
+        sourceFilePath: testFileDir + "\\test.mp4",
+        destinationPath: testFileDir + "\\test.mxf",
+        sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2017\\MediaIO\\systempresets\\4d584620_444d5846\\DNX HQ 1080p 25.epr",
         overwriteDestinationIfPresent: true
     })
         .then(function (status) { return console.log("OK", status); }, function (err) { return console.log("ERROR", err); });
@@ -60,24 +75,34 @@ else if (cmd == "job_abort") {
     ame.abortJob().then(function (status) { return console.log("OK", status); }, function (err) { return console.log("ERROR", err); });
 }
 else if (cmd == "ame") {
-    var a = new dist_1.AdobeMediaEncoder({ enableNotificationsServer: true, notificationsPort: 8018, hostname: 'localhost', port: 8081 });
+    var a = new dist_1.AdobeMediaEncoder({ enableNotificationsServer: true, notificationsPort: 8018, hostname: ip.address(), port: 8080 });
     console.log("Starting AME gateway..");
     a.start().then(function () {
         console.log("Started AME gateway, enqueuing job..");
         try {
             var job1 = a.enqueueJob({
+                /*
                 sourceFilePath: "d:\\render_me.avi",
                 destinationPath: "d:\\temp\\render_me.mxf",
                 sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2015\\MediaIO\\systempresets\\4D584620_444D5846\\DNX HQ 720p 23.976.epr",
+                overwriteDestinationIfPresent: true
+                */
+                sourceFilePath: testFileDir + "\\test.mp4",
+                destinationPath: testFileDir + "\\test.mxf",
+                sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2017\\MediaIO\\systempresets\\4d584620_444d5846\\DNX HQ 1080p 25.epr",
                 overwriteDestinationIfPresent: true
             });
             job1.on('ended', function () {
                 console.log(job1.status, job1.lastStatusResponse);
             });
             var job2 = a.enqueueJob({
-                sourceFilePath: "d:\\render_me.avi",
+                /*sourceFilePath: "d:\\render_me.avi",
                 destinationPath: "d:\\temp\\render_me_again.mxf",
                 sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2015\\MediaIO\\systempresets\\4D584620_444D5846\\DNX HQ 720p 23.976.epr",
+                overwriteDestinationIfPresent: true*/
+                sourceFilePath: testFileDir + "\\test.mp4",
+                destinationPath: testFileDir + "\\test_again.mxf",
+                sourcePresetPath: "C:\\Program Files\\Adobe\\Adobe Media Encoder CC 2017\\MediaIO\\systempresets\\4d584620_444d5846\\DNX HQ 1080p 25.epr",
                 overwriteDestinationIfPresent: true
             });
             job2.on('ended', function () {

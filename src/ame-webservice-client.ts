@@ -106,6 +106,7 @@ export class AMEWebserviceClient implements IAMEWebserviceClient
 
     constructor(config: IAMEWebserviceClientConfig)
     {
+
         this._config = config;
 
         this._log = (config.logger == null) ? new NullLogger() : config.logger;
@@ -115,6 +116,7 @@ export class AMEWebserviceClient implements IAMEWebserviceClient
             hostname: config.hostname || 'localhost',
             port: ((config.port == null) ? this.AME_DEFAULT_PORT.toString() : config.port).toString(),
         });
+        console.log('AMEWebserviceClient', baseUrl);
 
         this._jobsApiUrl = url.resolve(baseUrl, this.JOBS_API_PATH);
         this._serverApiUrl = url.resolve(baseUrl, this.SERVER_API_PATH);
@@ -142,6 +144,7 @@ export class AMEWebserviceClient implements IAMEWebserviceClient
     startServer(): q.Promise<void>
     {
         const d = q.defer<void>();
+        console.log("startServer");
 
         request({
             method: 'POST',
@@ -149,8 +152,8 @@ export class AMEWebserviceClient implements IAMEWebserviceClient
         },
         (err: Error, response: any, body: any) =>
         {
+            console.log("Errory");
             console.dir(body);
-
             if (err) return d.reject(err);
             else if (Math.floor(response.statusCode/100) != 2) d.reject(new Error("Expected HTTP status code 2XX, got " + response.statusCode));
             else d.resolve();
