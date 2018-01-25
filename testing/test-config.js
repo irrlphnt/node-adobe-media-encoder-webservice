@@ -55,7 +55,7 @@ const AME_LOCAL_DIR = path.resolve (os.homedir(), "Documents", "Adobe", "Adobe M
 const AME_PROGRAM_DIR = 
 (os.platform() === 'win32') 
 ? path.resolve ("/", "Program Files", "Adobe", AME_VERSION_NAME)
-: path.resolve ("Applications", AME_VERSION_NAME) //need to check this on MAC
+: path.resolve ("/","Applications", AME_VERSION_NAME) //need to check this on MAC
 ;
 
 
